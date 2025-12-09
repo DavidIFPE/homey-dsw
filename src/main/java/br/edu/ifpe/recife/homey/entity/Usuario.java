@@ -1,5 +1,6 @@
 package br.edu.ifpe.recife.homey.entity;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -39,7 +40,7 @@ public abstract class Usuario {
     protected String senha;
     
     @Column(name = "DT_NASCIMENTO", nullable = false)
-    protected Date dataNascimento; 
+    protected LocalDate dataNascimento;
     
     @Column(name = "TELEFONE", nullable = false, length = 20)
     protected String telefone;
