@@ -2,8 +2,6 @@ package br.edu.ifpe.recife.homey.service;
 
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import br.edu.ifpe.recife.homey.dto.CriarClienteDTO;
@@ -15,7 +13,6 @@ import br.edu.ifpe.recife.homey.repository.PrestadorRepository;
 
 @Service
 public class UsuarioService {
-    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
     private final ClienteRepository clienteRepository;
     private final PrestadorRepository prestadorRepository;
 
