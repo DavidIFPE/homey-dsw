@@ -13,15 +13,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "CONTRATO")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Contrato {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -39,9 +33,57 @@ public class Contrato {
     
     @Column(name = "DT_CRIACAO")
     protected Date dataCriacao;
+
+    public Contrato() {
+    }
     
     @PrePersist
     public void setDataCriacao() {
         this.dataCriacao = new Date();
+    }
+
+    // Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Date getData_inicio() {
+        return data_inicio;
+    }
+
+    public void setData_inicio(Date data_inicio) {
+        this.data_inicio = data_inicio;
+    }
+
+    public Date getData_fim() {
+        return data_fim;
+    }
+
+    public void setData_fim(Date data_fim) {
+        this.data_fim = data_fim;
+    }
+
+    public BigDecimal getValor_final() {
+        return valor_final;
+    }
+
+    public void setValor_final(BigDecimal valor_final) {
+        this.valor_final = valor_final;
+    }
+
+    public Servico getServico() {
+        return servico;
+    }
+
+    public void setServico(Servico servico) {
+        this.servico = servico;
+    }
+
+    public Date getDataCriacao() {
+        return dataCriacao;
     }
 }

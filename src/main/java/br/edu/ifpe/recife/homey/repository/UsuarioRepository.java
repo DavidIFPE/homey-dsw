@@ -8,4 +8,7 @@ import br.edu.ifpe.recife.homey.entity.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
+
+    //UserDetails findByLogin(String email);
+
 }

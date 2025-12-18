@@ -19,15 +19,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "SERVICO")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Servico {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -58,7 +52,10 @@ public class Servico {
     private List<Categoria> categorias;
 
     @Column(name = "DT_CRIACAO")
-    protected Date dataCriacao;    
+    protected Date dataCriacao;
+
+    public Servico() {
+    }
     
     @PrePersist
     public void setDataCriacao() {
@@ -70,5 +67,74 @@ public class Servico {
             this.contratos = new ArrayList<>();
         }
         this.contratos.add(contrato);
+    }
+
+    // Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public BigDecimal getPrecoBase() {
+        return precoBase;
+    }
+
+    public void setPrecoBase(BigDecimal precoBase) {
+        this.precoBase = precoBase;
+    }
+
+    public Boolean getDisponivel() {
+        return disponivel;
+    }
+
+    public void setDisponivel(Boolean disponivel) {
+        this.disponivel = disponivel;
+    }
+
+    public Prestador getPrestador() {
+        return prestador;
+    }
+
+    public void setPrestador(Prestador prestador) {
+        this.prestador = prestador;
+    }
+
+    public List<Contrato> getContratos() {
+        return contratos;
+    }
+
+    public void setContratos(List<Contrato> contratos) {
+        this.contratos = contratos;
+    }
+
+    public List<Categoria> getCategorias() {
+        return categorias;
+    }
+
+    public void setCategorias(List<Categoria> categorias) {
+        this.categorias = categorias;
+    }
+
+    public Date getDataCriacao() {
+        return dataCriacao;
     }
 }

@@ -9,15 +9,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "CATEGORIA")
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,10 +20,34 @@ public class Categoria {
     private String nome;
     
     @Column(name = "DT_CRIACAO")
-    protected Date dataCriacao;    
+    protected Date dataCriacao;
+
+    public Categoria() {
+    }
     
     @PrePersist
     public void setDataCriacao() {
         this.dataCriacao = new Date();
+    }
+
+    // Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public Date getDataCriacao() {
+        return dataCriacao;
     }
 }
