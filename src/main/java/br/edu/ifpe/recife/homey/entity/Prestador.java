@@ -3,6 +3,7 @@ package br.edu.ifpe.recife.homey.entity;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
@@ -76,7 +77,7 @@ public class Prestador extends Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList(); // Pode adicionar ROLE_PRESTADOR no futuro
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_PRESTADOR"));
     }
 
     @Override

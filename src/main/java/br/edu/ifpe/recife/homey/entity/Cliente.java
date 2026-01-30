@@ -3,6 +3,7 @@ package br.edu.ifpe.recife.homey.entity;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -42,7 +43,7 @@ public class Cliente extends Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_CLIENTE"));
     }
 
     @Override

@@ -5,6 +5,8 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,19 +19,35 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "CONTRATO")
 public class Contrato {
+    
+    public enum StatusContrato {
+        PENDENTE, ATIVO, CONCLUIDO, CANCELADO
+    }
+    
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
+    
     @Column(name = "DT_INICIO", nullable = false)
     private Date data_inicio;
+    
     @Column(name = "DT_FIM", nullable = false)
     private Date data_fim;
+    
     @Column(name = "VALOR_FINAL", precision = 10, scale = 2)
     private BigDecimal valor_final;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", nullable = false, length = 20)
+    private StatusContrato status = StatusContrato.PENDENTE;
     
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "ID_SERVICO", referencedColumnName = "ID")
     private Servico servico;
+    
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "ID_CLIENTE", referencedColumnName = "ID")
+    private Cliente cliente;
     
     @Column(name = "DT_CRIACAO")
     protected Date dataCriacao;
@@ -81,6 +99,22 @@ public class Contrato {
 
     public void setServico(Servico servico) {
         this.servico = servico;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public StatusContrato getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusContrato status) {
+        this.status = status;
     }
 
     public Date getDataCriacao() {

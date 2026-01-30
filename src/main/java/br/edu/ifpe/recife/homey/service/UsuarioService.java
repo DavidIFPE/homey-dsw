@@ -2,6 +2,7 @@ package br.edu.ifpe.recife.homey.service;
 
 import java.util.Optional;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.edu.ifpe.recife.homey.dto.CriarClienteDTO;
@@ -15,10 +16,12 @@ import br.edu.ifpe.recife.homey.repository.PrestadorRepository;
 public class UsuarioService {
     private final ClienteRepository clienteRepository;
     private final PrestadorRepository prestadorRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public UsuarioService(ClienteRepository clienteRepository, PrestadorRepository prestadorRepository) {
         this.clienteRepository = clienteRepository;
         this.prestadorRepository = prestadorRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     public Prestador criaPrestador(CriarPrestadorDTO dto) throws Exception {
@@ -32,7 +35,7 @@ public class UsuarioService {
         prestador.setEmail(dto.email());
         prestador.setUsername(dto.username());
         prestador.setTelefone(dto.telefone());
-        prestador.setSenha(dto.senha());
+        prestador.setSenha(passwordEncoder.encode(dto.senha()));
         prestador.setDataNascimento(dto.dataNascimento());
         
         prestadorRepository.save(prestador);
@@ -50,7 +53,7 @@ public class UsuarioService {
         cliente.setEmail(dto.email());
         cliente.setUsername(dto.username());
         cliente.setTelefone(dto.telefone());
-        cliente.setSenha(dto.senha());
+        cliente.setSenha(passwordEncoder.encode(dto.senha()));
         cliente.setDataNascimento(dto.dataNascimento());
 
         clienteRepository.save(cliente);
