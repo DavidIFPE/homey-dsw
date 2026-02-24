@@ -1,7 +1,9 @@
 package br.edu.ifpe.recife.homey.entity;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +14,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -48,6 +54,13 @@ public class Contrato {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "ID_CLIENTE", referencedColumnName = "ID")
     private Cliente cliente;
+    
+    @OneToMany(mappedBy = "contrato", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Proposta> propostas;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_PROPOSTA_ACEITA")
+    private Proposta propostaAceita;
     
     @Column(name = "DT_CRIACAO")
     protected Date dataCriacao;
@@ -107,6 +120,34 @@ public class Contrato {
 
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
+    }
+
+    public void addProposta(Proposta proposta) {
+        if (this.propostas == null) {
+            this.propostas = new ArrayList<>();
+        }
+        this.propostas.add(proposta);
+        proposta.setContrato(this);
+    }
+
+    public List<Proposta> getPropostas() {
+        return propostas;
+    }
+
+    public void setPropostas(List<Proposta> propostas) {
+        this.propostas = propostas;
+    }
+
+    public Proposta getPropostaAceita() {
+        return propostaAceita;
+    }
+
+    public void setPropostaAceita(Proposta propostaAceita) {
+        this.propostaAceita = propostaAceita;
+        if (propostaAceita != null) {
+            this.valor_final = propostaAceita.getValor();
+            this.status = StatusContrato.ATIVO;
+        }
     }
 
     public StatusContrato getStatus() {
