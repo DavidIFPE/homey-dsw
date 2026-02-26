@@ -45,6 +45,8 @@ public class SecurityConfigurations {
                         // Criação de usuários - público
                         .requestMatchers(HttpMethod.POST, "/usuario/cliente").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario/prestador").permitAll()
+                        // Upload de foto - autenticado
+                        .requestMatchers(HttpMethod.POST, "/usuario/foto").authenticated()
                         
                         // Categorias - todas as operações públicas (facilitando uso inicial)
                         .requestMatchers("/categorias/**").permitAll()
@@ -59,6 +61,10 @@ public class SecurityConfigurations {
                         // Contratos - apenas autenticados
                         .requestMatchers(HttpMethod.POST, "/contratos").hasRole("CLIENTE")
                         .requestMatchers("/contratos/**").authenticated()
+
+                        .requestMatchers("/avaliacoes/**").authenticated()
+
+                         .requestMatchers("/uploads/**").permitAll()
                         
                         // Console H2 - público (apenas dev)
                         .requestMatchers("/h2-console/**").permitAll()

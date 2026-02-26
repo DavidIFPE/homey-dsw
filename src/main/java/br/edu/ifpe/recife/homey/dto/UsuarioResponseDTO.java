@@ -20,7 +20,7 @@ public record UsuarioResponseDTO(
     String resumo,
     Double avaliacao,
     Date dataCriacao,
-    EnderecoResponseDTO endereco
+    String fotoUrl
 ) {
     public static UsuarioResponseDTO fromEntity(Usuario usuario) {
         if (usuario instanceof Cliente cliente) {
@@ -37,7 +37,7 @@ public record UsuarioResponseDTO(
                 null,
                 null,
                 cliente.getDataCriacao(),
-                cliente.getEndereco() != null ? EnderecoResponseDTO.fromEntity(cliente.getEndereco()) : null
+                cliente.getFotoUrl()
             );
         } else if (usuario instanceof Prestador prestador) {
             return new UsuarioResponseDTO(
@@ -53,7 +53,7 @@ public record UsuarioResponseDTO(
                 prestador.getResumo(),
                 prestador.getAvaliacao(),
                 prestador.getDataCriacao(),
-                prestador.getEndereco() != null ? EnderecoResponseDTO.fromEntity(prestador.getEndereco()) : null
+                prestador.getFotoUrl()
             );
         }
         return null;

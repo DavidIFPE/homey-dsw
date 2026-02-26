@@ -1,7 +1,10 @@
 package br.edu.ifpe.recife.homey.service;
 
+import java.io.IOException;
 import java.util.Optional;
 
+import br.edu.ifpe.recife.homey.entity.Usuario;
+import br.edu.ifpe.recife.homey.repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,19 +16,36 @@ import br.edu.ifpe.recife.homey.entity.Endereco;
 import br.edu.ifpe.recife.homey.entity.Prestador;
 import br.edu.ifpe.recife.homey.repository.ClienteRepository;
 import br.edu.ifpe.recife.homey.repository.PrestadorRepository;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class UsuarioService {
     private final ClienteRepository clienteRepository;
     private final PrestadorRepository prestadorRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final FotoService fotoService;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public UsuarioService(ClienteRepository clienteRepository, PrestadorRepository prestadorRepository) {
+    public UsuarioService(ClienteRepository clienteRepository, PrestadorRepository prestadorRepository, UsuarioRepository usuarioRepository, FotoService fotoService) {
         this.clienteRepository = clienteRepository;
         this.prestadorRepository = prestadorRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.fotoService = fotoService;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
+    public String uploadFoto(Usuario usuario, MultipartFile foto) throws IOException, IOException {
+        if (usuario.getFotoUrl() != null) {
+            fotoService.deletarFoto(usuario.getFotoUrl());
+        }
+
+        String fotoUrl = fotoService.salvarFoto(foto, usuario.getId());
+
+        usuario.setFotoUrl(fotoUrl);
+        usuarioRepository.save(usuario);
+
+        return fotoUrl;
+    }
     public Prestador criaPrestador(CriarPrestadorDTO dto) throws Exception {
         Optional<Prestador> usuarioExistente = prestadorRepository.findByEmail(dto.email());
 

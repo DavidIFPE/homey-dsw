@@ -46,6 +46,9 @@ public abstract class Usuario {
     @JoinColumn(name = "ID_ENDERECO", referencedColumnName = "ID", nullable = true)
     private Endereco endereco;
 
+    @Column(name = "FOTO_URL", length = 500)
+    protected String fotoUrl;
+
     @PrePersist
     public void setDataCriacao() {
         this.dataCriacao = new Date();
