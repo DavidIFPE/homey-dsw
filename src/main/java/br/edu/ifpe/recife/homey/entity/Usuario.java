@@ -6,6 +6,8 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "USUARIO")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -27,6 +29,7 @@ public abstract class Usuario {
     @Column(name = "USERNAME", nullable = false, unique = true, length = 30)
     protected String username;
 
+    @JsonIgnore
     @Column(name = "SENHA", nullable = false, length = 255)
     protected String senha;
 
@@ -39,8 +42,23 @@ public abstract class Usuario {
     @Column(name = "DT_CRIACAO")
     protected Date dataCriacao;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_ENDERECO", referencedColumnName = "ID", nullable = true)
+    private Endereco endereco;
+
+    @Column(name = "FOTO_URL", length = 500)
+    protected String fotoUrl;
+
     @PrePersist
     public void setDataCriacao() {
         this.dataCriacao = new Date();
+    }
+
+    public Endereco getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(Endereco endereco) {
+        this.endereco = endereco;
     }
 }

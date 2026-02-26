@@ -6,6 +6,7 @@ import br.edu.ifpe.recife.homey.dto.RegistroDTO;
 import br.edu.ifpe.recife.homey.dto.UsuarioResponseDTO;
 import br.edu.ifpe.recife.homey.entity.Cliente;
 import br.edu.ifpe.recife.homey.entity.Usuario;
+import br.edu.ifpe.recife.homey.repository.UsuarioRepository;
 import br.edu.ifpe.recife.homey.security.TokenService;
 import br.edu.ifpe.recife.homey.service.AutenticacaoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,10 +52,10 @@ public class AutenticacaoController {
         try {
             var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.password());
             var auth = authenticationManager.authenticate(usernamePassword);
-
-            String token = tokenService.generateToken((Usuario) auth.getPrincipal());
-
-            return ResponseEntity.ok(new LoginResponseDTO(token));
+            Usuario usuario = (Usuario) auth.getPrincipal();
+            String token = tokenService.generateToken(usuario);
+            UsuarioResponseDTO usuarioDTO = UsuarioResponseDTO.fromEntity(usuario);
+            return ResponseEntity.ok(new LoginResponseDTO(token, usuarioDTO));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Email ou senha inválidos");

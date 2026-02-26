@@ -16,7 +16,8 @@ public record ServicoResponseDTO(
     Long prestadorId,
     String prestadorNome,
     List<CategoriaResponseDTO> categorias,
-    Date dataCriacao
+    Date dataCriacao,
+    EnderecoResponseDTO endereco
 ) {
     public static ServicoResponseDTO fromEntity(Servico servico) {
         return new ServicoResponseDTO(
@@ -27,12 +28,13 @@ public record ServicoResponseDTO(
             servico.getDisponivel(),
             servico.getPrestador().getId(),
             servico.getPrestador().getNome(),
-            servico.getCategorias() != null ? 
+            servico.getCategorias() != null ?
                 servico.getCategorias().stream()
                     .map(CategoriaResponseDTO::fromEntity)
-                    .collect(Collectors.toList()) : 
+                    .collect(Collectors.toList()) :
                 List.of(),
-            servico.getDataCriacao()
+            servico.getDataCriacao(),
+            servico.getEndereco() != null ? EnderecoResponseDTO.fromEntity(servico.getEndereco()) : null
         );
     }
 }

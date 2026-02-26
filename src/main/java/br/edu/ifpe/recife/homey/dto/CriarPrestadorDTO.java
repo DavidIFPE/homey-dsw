@@ -1,8 +1,10 @@
 package br.edu.ifpe.recife.homey.dto;
 
 import java.time.LocalDate;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Null;
 
 public record CriarPrestadorDTO(
     @NotBlank String nome,
@@ -11,6 +13,9 @@ public record CriarPrestadorDTO(
     @NotBlank String senha,
     @NotNull LocalDate dataNascimento,
     @NotBlank String telefone,
-    @NotBlank String cpfCnpj
+    @NotBlank String cpfCnpj,
+
+    @Valid
+    EnderecoDTO endereco
 ) {
 }

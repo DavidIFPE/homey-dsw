@@ -2,6 +2,7 @@ package br.edu.ifpe.recife.homey.controller;
 
 import br.edu.ifpe.recife.homey.dto.AtualizarServicoDTO;
 import br.edu.ifpe.recife.homey.dto.CriarServicoDTO;
+import br.edu.ifpe.recife.homey.dto.ServicoProximoDTO;
 import br.edu.ifpe.recife.homey.dto.ServicoResponseDTO;
 import br.edu.ifpe.recife.homey.entity.Usuario;
 import br.edu.ifpe.recife.homey.service.ServicoService;
@@ -31,22 +32,51 @@ public class ServicoController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar serviços", description = "Endpoint público - lista todos os serviços ou filtra por prestador")
+    @Operation(summary = "Listar serviços", description = "Endpoint público - lista todos os serviços ou filtra por prestador e/ou categoria")
     public ResponseEntity<List<ServicoResponseDTO>> listarTodos(
             @Parameter(description = "ID do prestador para filtrar serviços")
-            @RequestParam(required = false) Long prestadorId) {
+            @RequestParam(required = false) Long prestadorId,
+            @Parameter(description = "Nome da categoria para filtrar serviços (opcional)")
+            @RequestParam(required = false) String categoria) {
         List<ServicoResponseDTO> servicos;
         
+        List<br.edu.ifpe.recife.homey.entity.Servico> base;
+
         if (prestadorId != null) {
-            servicos = servicoService.listarPorPrestador(prestadorId).stream()
-                    .map(ServicoResponseDTO::fromEntity)
-                    .collect(Collectors.toList());
+            base = servicoService.listarPorPrestador(prestadorId);
         } else {
-            servicos = servicoService.listarTodos().stream()
-                    .map(ServicoResponseDTO::fromEntity)
-                    .collect(Collectors.toList());
+            base = servicoService.listarTodos();
         }
-        
+
+        if (categoria != null) {
+            String nome = categoria.trim();
+            if (!nome.isEmpty()) {
+                String nomeFinal = nome;
+                base = base.stream()
+                        .filter(s -> s.getCategorias() != null &&
+                                s.getCategorias().stream()
+                                        .anyMatch(c -> c.getNome() != null && c.getNome().equalsIgnoreCase(nomeFinal)))
+                        .toList();
+            }
+        }
+
+        servicos = base.stream()
+                .map(ServicoResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(servicos);
+    }
+
+    @GetMapping("/por-categoria")
+    @Operation(summary = "Listar serviços por categoria", description = "Endpoint público - lista serviços filtrando pelo nome da categoria")
+    public ResponseEntity<List<ServicoResponseDTO>> listarPorCategoria(
+            @Parameter(description = "Nome da categoria (case insensitive)")
+            @RequestParam String categoria
+    ) {
+        List<ServicoResponseDTO> servicos = servicoService.listarPorCategoriaNome(categoria).stream()
+                .map(ServicoResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(servicos);
     }
 
@@ -76,6 +106,17 @@ public class ServicoController {
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/proximos")
+    @Operation(summary = "Buscar serviços próximos", description = "Busca serviços próximos a um CEP fornecido, podendo filtrar por categoria")
+    @SecurityRequirement(name = "Bearer Authentication")
+    public List<ServicoProximoDTO> buscarServicosPorCep(
+            @RequestParam String cep,
+            @Parameter(description = "Nome da categoria para filtrar serviços (opcional)")
+            @RequestParam(required = false) String categoria
+    ) {
+        return servicoService.buscarPorCep(cep, categoria);
     }
 
     @PutMapping("/{id}")
