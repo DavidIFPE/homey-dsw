@@ -49,12 +49,18 @@ public class Proposta {
     @Column(name = "PRAZO_RESPOSTA")
     private Date prazoResposta;
 
+    @Column(name = "DT_INICIO", nullable = true)
+    private Date data_inicio;
+    
+    @Column(name = "DT_FIM", nullable = true)
+    private Date data_fim;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false, length = 20)
     private StatusProposta status = StatusProposta.PENDENTE;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_PROPOSTA_PAI")
+    @JoinColumn(name = "ID_PROPOSTA_PAI", nullable = true)
     private Proposta propostaPai;
 
     @Column(name = "DT_CRIACAO")
@@ -144,4 +150,21 @@ public class Proposta {
     public Date getDataCriacao() {
         return dataCriacao;
     }
+
+    public Date getData_inicio() {
+        return data_inicio;
+    }
+
+    public void setData_inicio(Date data_inicio) {
+        this.data_inicio = data_inicio;
+    }
+
+    public Date getData_fim() {
+        return data_fim;
+    }
+
+    public void setData_fim(Date data_fim) {
+        this.data_fim = data_fim;
+    }
+
 }

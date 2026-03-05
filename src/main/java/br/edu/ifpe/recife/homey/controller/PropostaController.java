@@ -13,11 +13,15 @@ import br.edu.ifpe.recife.homey.entity.Contrato;
 import br.edu.ifpe.recife.homey.entity.Proposta;
 import br.edu.ifpe.recife.homey.repository.ContratoRepository;
 import br.edu.ifpe.recife.homey.service.PropostaService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/propostas")
+@Tag(name = "Avaliações", description = "Gerenciamento de avaliações de contratos")
+@SecurityRequirement(name = "Bearer Authentication")
 public class PropostaController {
-
     private final PropostaService propostaService;
     private final ContratoRepository contratoRepository;
 
@@ -27,7 +31,7 @@ public class PropostaController {
     }
 
     @PostMapping
-    public ResponseEntity<PropostaResponseDTO> criar(@RequestBody CriarPropostaDTO dto) {
+    public ResponseEntity<PropostaResponseDTO> criar(@RequestBody @Valid CriarPropostaDTO dto) {
         Proposta p = propostaService.criarProposta(dto);
         PropostaResponseDTO body = toDto(p);
         URI location = URI.create("/propostas/" + p.getId());
@@ -56,7 +60,7 @@ public class PropostaController {
     }
 
     @PostMapping("/{id}/contrapropor")
-    public ResponseEntity<PropostaResponseDTO> contrapropor(@PathVariable Long id, @RequestBody CriarPropostaDTO dto) {
+    public ResponseEntity<PropostaResponseDTO> contrapropor(@PathVariable Long id, @RequestBody @Valid CriarPropostaDTO dto) {
         Proposta p = propostaService.criarContraproposta(id, dto);
         return ResponseEntity.ok(toDto(p));
     }
@@ -71,7 +75,6 @@ public class PropostaController {
         dto.setMensagem(p.getMensagem());
         dto.setPrazoResposta(p.getPrazoResposta());
         dto.setStatus(p.getStatus());
-        dto.setPropostaPaiId(p.getPropostaPai() != null ? p.getPropostaPai().getId() : null);
         dto.setDataCriacao(p.getDataCriacao());
         return dto;
     }

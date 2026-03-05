@@ -4,10 +4,14 @@ import br.edu.ifpe.recife.homey.dto.CriarClienteDTO;
 import br.edu.ifpe.recife.homey.dto.CriarPrestadorDTO;
 import br.edu.ifpe.recife.homey.dto.EnderecoDTO;
 import br.edu.ifpe.recife.homey.entity.Categoria;
+import br.edu.ifpe.recife.homey.entity.Cliente;
+import br.edu.ifpe.recife.homey.entity.Contrato;
 import br.edu.ifpe.recife.homey.entity.Endereco;
 import br.edu.ifpe.recife.homey.entity.Prestador;
+import br.edu.ifpe.recife.homey.entity.Proposta;
 import br.edu.ifpe.recife.homey.entity.Servico;
 import br.edu.ifpe.recife.homey.repository.CategoriaRepository;
+import br.edu.ifpe.recife.homey.repository.ContratoRepository;
 import br.edu.ifpe.recife.homey.repository.ServicoRepository;
 import br.edu.ifpe.recife.homey.service.UsuarioService;
 import org.springframework.boot.CommandLineRunner;
@@ -18,6 +22,7 @@ import org.springframework.context.annotation.Profile;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Configuration
@@ -27,7 +32,8 @@ public class DevDataConfig {
     @Bean
     CommandLineRunner initDevData(UsuarioService usuarioService,
                                   ServicoRepository servicoRepository,
-                                  CategoriaRepository categoriaRepository) {
+                                  CategoriaRepository categoriaRepository,
+                                ContratoRepository contratoRepository) {
         return args -> {
             if (!servicoRepository.findAll().isEmpty()) {
                 return; // já tem dados, não semear novamente
@@ -203,6 +209,164 @@ public class DevDataConfig {
                             -34.876230
                     )
             );
+
+            // ---------------------------------------------
+        // SEED: Contratos e Propostas (vários cenários)
+        // ---------------------------------------------
+
+        // Recupera o cliente e o prestador criados acima
+        // Ajuste a forma de busca conforme seus métodos disponíveis
+        Cliente clienteDev = (Cliente) usuarioService.buscarPorUsername("cliente.dev")
+                .orElseThrow(() -> new IllegalStateException("Cliente Dev não encontrado"));
+        Prestador prestadorDev = (Prestador) usuarioService.buscarPorUsername("prestador.dev")
+                .orElseThrow(() -> new IllegalStateException("Prestador Dev não encontrado"));
+
+        // Pega alguns serviços criados (os 3 primeiros, por exemplo)
+        List<Servico> servicosSeed = servicoRepository.findAll();
+        Servico servico1 = servicosSeed.get(0);
+        Servico servico2 = servicosSeed.size() > 1 ? servicosSeed.get(1) : servico1;
+        Servico servico3 = servicosSeed.size() > 2 ? servicosSeed.get(2) : servico1;
+
+        Date agora = new Date();
+        Date daqui3Dias = new Date(agora.getTime() + 3L * 24 * 3600 * 1000);
+        Date daqui5Dias = new Date(agora.getTime() + 5L * 24 * 3600 * 1000);
+        Date inicioProxSemana = new Date(agora.getTime() + 7L * 24 * 3600 * 1000);
+        Date fimProxSemana = new Date(agora.getTime() + 10L * 24 * 3600 * 1000);
+
+        // Utilitário para criar proposta rapidamente
+        java.util.function.Function<BigDecimal, Proposta> propostaBaseCliente = (valor) -> {
+        Proposta p = new Proposta();
+        p.setRemetente(clienteDev);
+        p.setDestinatario(prestadorDev);
+        p.setValor(valor);
+        p.setMensagem("Proposta inicial do cliente");
+        p.setStatus(Proposta.StatusProposta.PENDENTE);
+        p.setPrazoResposta(daqui3Dias);
+        p.setData_inicio(null);
+        p.setData_fim(null);
+        return p;
+        };
+
+        java.util.function.Function<BigDecimal, Proposta> propostaBasePrestador = (valor) -> {
+        Proposta p = new Proposta();
+        p.setRemetente(prestadorDev);
+        p.setDestinatario(clienteDev);
+        p.setValor(valor);
+        p.setMensagem("Contraproposta do prestador");
+        p.setStatus(Proposta.StatusProposta.PENDENTE);
+        p.setPrazoResposta(daqui5Dias);
+        p.setData_inicio(null);
+        p.setData_fim(null);
+        return p;
+        };
+
+        // ========== CENÁRIO 1: Contrato PENDENTE com propostas pendentes (ida e volta) ==========
+        Contrato contratoPendente = new Contrato();
+        contratoPendente.setStatus(Contrato.StatusContrato.PENDENTE);
+        contratoPendente.setCliente(clienteDev);
+        contratoPendente.setServico(servico1);
+
+        // Histórico: cliente propõe, prestador contrapropõe (ambas PENDENTES)
+        Proposta c1_p1 = propostaBaseCliente.apply(new BigDecimal("150.00"));
+        Proposta c1_p2 = propostaBasePrestador.apply(new BigDecimal("180.00"));
+        contratoPendente.addProposta(c1_p1);
+        contratoPendente.addProposta(c1_p2);
+
+        contratoPendente = contratoRepository.save(contratoPendente); // cascade salva propostas
+
+        // ========== CENÁRIO 2: Contrato ATIVO (proposta aceita; demais recusadas) ==========
+        Contrato contratoAtivo = new Contrato();
+        contratoAtivo.setStatus(Contrato.StatusContrato.PENDENTE);
+        contratoAtivo.setCliente(clienteDev);
+        contratoAtivo.setServico(servico2);
+
+        // Histórico: cliente propõe, prestador contrapropõe, cliente mantém proposta inicial → prestador aceita a inicial
+        Proposta c2_p1 = propostaBaseCliente.apply(new BigDecimal("200.00"));
+        c2_p1.setMensagem("Posso fechar por 200");
+        c2_p1.setData_inicio(inicioProxSemana);
+        c2_p1.setData_fim(fimProxSemana);
+
+        Proposta c2_p2 = propostaBasePrestador.apply(new BigDecimal("220.00"));
+        c2_p2.setMensagem("Consigo por 220");
+
+        contratoAtivo.addProposta(c2_p1);
+        contratoAtivo.addProposta(c2_p2);
+
+        // Prestador aceita a proposta do cliente (c2_p1)
+        c2_p1.setStatus(Proposta.StatusProposta.ACEITA);
+        c2_p2.setStatus(Proposta.StatusProposta.RECUSADA);
+
+        contratoAtivo.setPropostaAceita(c2_p1); // já seta status ATIVO e valor_final
+        contratoAtivo.setData_inicio(c2_p1.getData_inicio());
+        contratoAtivo.setData_fim(c2_p1.getData_fim());
+
+        contratoAtivo = contratoRepository.save(contratoAtivo);
+
+        // ========== CENÁRIO 3: Contrato CONCLUÍDO ==========
+        Contrato contratoConcluido = new Contrato();
+        contratoConcluido.setStatus(Contrato.StatusContrato.PENDENTE);
+        contratoConcluido.setCliente(clienteDev);
+        contratoConcluido.setServico(servico3);
+
+        Proposta c3_p1 = propostaBaseCliente.apply(new BigDecimal("180.00"));
+        c3_p1.setMensagem("Proposta para concluir serviço");
+
+        contratoConcluido.addProposta(c3_p1);
+
+        // Prestador aceita
+        c3_p1.setStatus(Proposta.StatusProposta.ACEITA);
+        contratoConcluido.setPropostaAceita(c3_p1);
+        contratoConcluido.setData_inicio(inicioProxSemana);
+        contratoConcluido.setData_fim(fimProxSemana);
+
+        // Marca como CONCLUÍDO (após execução do serviço)
+        contratoConcluido.setStatus(Contrato.StatusContrato.CONCLUIDO);
+
+        contratoConcluido = contratoRepository.save(contratoConcluido);
+
+        // ========== CENÁRIO 4: Contrato CANCELADO (todas propostas recusadas) ==========
+        Contrato contratoCancelado = new Contrato();
+        contratoCancelado.setStatus(Contrato.StatusContrato.PENDENTE);
+        contratoCancelado.setCliente(clienteDev);
+        contratoCancelado.setServico(servico1);
+
+        Proposta c4_p1 = propostaBaseCliente.apply(new BigDecimal("120.00"));
+        Proposta c4_p2 = propostaBasePrestador.apply(new BigDecimal("200.00"));
+        Proposta c4_p3 = propostaBaseCliente.apply(new BigDecimal("160.00"));
+        c4_p1.setMensagem("Cliente oferta 120");
+        c4_p2.setMensagem("Prestador pede 200");
+        c4_p3.setMensagem("Cliente melhora para 160");
+
+        contratoCancelado.addProposta(c4_p1);
+        contratoCancelado.addProposta(c4_p2);
+        contratoCancelado.addProposta(c4_p3);
+
+        // Negociação falha: prestador recusa última; contrato sem aceite e cancelado
+        c4_p1.setStatus(Proposta.StatusProposta.RECUSADA);
+        c4_p2.setStatus(Proposta.StatusProposta.RECUSADA);
+        c4_p3.setStatus(Proposta.StatusProposta.RECUSADA);
+        contratoCancelado.setStatus(Contrato.StatusContrato.CANCELADO);
+
+        contratoCancelado = contratoRepository.save(contratoCancelado);
+
+        // ========== CENÁRIO 5: Contrato PENDENTE com longa thread (inclui contrapropostas) ==========
+        Contrato contratoLongaThread = new Contrato();
+        contratoLongaThread.setStatus(Contrato.StatusContrato.PENDENTE);
+        contratoLongaThread.setCliente(clienteDev);
+        contratoLongaThread.setServico(servico2);
+
+        // Thread: C → P → C → P (todas pendentes)
+        Proposta c5_p1 = propostaBaseCliente.apply(new BigDecimal("140.00")); c5_p1.setMensagem("1) Cliente 140");
+        Proposta c5_p2 = propostaBasePrestador.apply(new BigDecimal("210.00")); c5_p2.setMensagem("2) Prestador 210");
+        Proposta c5_p3 = propostaBaseCliente.apply(new BigDecimal("170.00")); c5_p3.setMensagem("3) Cliente 170");
+        Proposta c5_p4 = propostaBasePrestador.apply(new BigDecimal("190.00")); c5_p4.setMensagem("4) Prestador 190");
+
+        contratoLongaThread.addProposta(c5_p1);
+        contratoLongaThread.addProposta(c5_p2);
+        contratoLongaThread.addProposta(c5_p3);
+        contratoLongaThread.addProposta(c5_p4);
+
+        contratoLongaThread = contratoRepository.save(contratoLongaThread);
         };
     }
 
@@ -240,5 +404,6 @@ public class DevDataConfig {
         servico.setEndereco(endereco);
 
         servicoRepository.save(servico);
+        
     }
 }

@@ -108,4 +108,8 @@ public class UsuarioService {
         endereco.setLongitude(dto.longitude());
         return endereco;
     }
+
+    public Optional<Usuario> buscarPorUsername(String username) {
+        return usuarioRepository.findByUsername(username);
+    }
 }

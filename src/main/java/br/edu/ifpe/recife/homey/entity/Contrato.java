@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import br.edu.ifpe.recife.homey.entity.Proposta.StatusProposta;
 import jakarta.persistence.*;
 
 @Entity
@@ -19,10 +20,10 @@ public class Contrato {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "DT_INICIO", nullable = false)
+    @Column(name = "DT_INICIO", nullable = true)
     private Date data_inicio;
     
-    @Column(name = "DT_FIM", nullable = false)
+    @Column(name = "DT_FIM", nullable = true)
     private Date data_fim;
     
     @Column(name = "VALOR_FINAL", precision = 10, scale = 2)
@@ -114,6 +115,7 @@ public class Contrato {
         if (this.propostas == null) {
             this.propostas = new ArrayList<>();
         }
+        this.propostas.forEach(p -> { p.setStatus(StatusProposta.RECUSADA); });
         this.propostas.add(proposta);
         proposta.setContrato(this);
     }

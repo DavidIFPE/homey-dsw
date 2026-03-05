@@ -25,4 +25,13 @@ public final class ServicoFactory {
         servico.setCategorias(categorias);
         return servico;
     }
+    
+    public static Servico criarServicoValido(Long id, Prestador prestador) {
+        Servico s = new Servico();
+        s.setId(id);
+        s.setTitulo("Servico " + id);
+        s.setPrestador(prestador);
+        s.setDisponivel(true);
+        return s;
+    }
 }
