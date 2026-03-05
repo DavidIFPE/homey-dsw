@@ -32,11 +32,11 @@ public class Proposta {
     @JoinColumn(name = "ID_CONTRATO", referencedColumnName = "ID")
     private Contrato contrato;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "ID_REMENTENTE", referencedColumnName = "ID")
     private Usuario remetente;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "ID_DESTINATARIO", referencedColumnName = "ID")
     private Usuario destinatario;
 

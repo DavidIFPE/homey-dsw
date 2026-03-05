@@ -59,9 +59,9 @@ public class PropostaController {
         return ResponseEntity.ok(toDto(p));
     }
 
-    @PostMapping("/{id}/contrapropor")
-    public ResponseEntity<PropostaResponseDTO> contrapropor(@PathVariable Long id, @RequestBody @Valid CriarPropostaDTO dto) {
-        Proposta p = propostaService.criarContraproposta(id, dto);
+    @PostMapping("/{contratoId}/contrapropor")
+    public ResponseEntity<PropostaResponseDTO> contrapropor(@PathVariable Long contratoId, @RequestBody @Valid CriarPropostaDTO dto) {
+        Proposta p = propostaService.criarContraproposta(contratoId, dto);
         return ResponseEntity.ok(toDto(p));
     }
 

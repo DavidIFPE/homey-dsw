@@ -16,6 +16,7 @@ import br.edu.ifpe.recife.homey.dto.UsuarioResponseDTO;
 import br.edu.ifpe.recife.homey.entity.Prestador;
 import br.edu.ifpe.recife.homey.entity.Usuario;
 import br.edu.ifpe.recife.homey.service.UsuarioService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 

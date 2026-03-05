@@ -153,48 +153,31 @@ public class PropostaService {
     }
 
     @Transactional
-    public Proposta criarContraproposta(Long propostaBaseId, CriarPropostaDTO dto) {
-        Proposta base = propostaRepository.findById(propostaBaseId)
-            .orElseThrow(() -> new IllegalArgumentException("Proposta base não encontrada"));
+    public Proposta criarContraproposta(Long contratoId, CriarPropostaDTO dto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof Usuario atual)) throw new AccessDeniedException("Usuário não autenticado");
 
-        Contrato contrato = base.getContrato();
-        if (contrato.getStatus() != Contrato.StatusContrato.PENDENTE) {
+        Contrato contrato = contratoRepository.findById(contratoId)
+            .orElseThrow(() -> new IllegalArgumentException("Contrato não encontrado"));
+
+        if (contrato.getStatus() != Contrato.StatusContrato.PENDENTE)
             throw new IllegalStateException("Contrato não está pendente");
-        }
-        if (contrato.getPropostaAceita() != null) {
+        if (contrato.getPropostaAceita() != null)
             throw new IllegalStateException("Contrato já possui proposta aceita");
-        }
 
-        // valida serviço (se quiser usar o servicoId do DTO)
-        if (dto.servicoId() != null && !dto.servicoId().equals(contrato.getServico().getId())) {
+        // (opcional) valide servicoId do DTO, se vier
+        if (dto.servicoId() != null && !dto.servicoId().equals(contrato.getServico().getId()))
             throw new IllegalArgumentException("Serviço do DTO não corresponde ao do contrato");
-        }
 
-        // define remetente/destinatário invertendo os papéis da base
-        Usuario remetente = base.getDestinatario();
-        Usuario destinatario = base.getRemetente();
-        if (remetente == null || destinatario == null || remetente.getId().equals(destinatario.getId())) {
-            throw new IllegalStateException("Remetente/Destinatário inválidos para contraproposta");
-        }
+        // obter a última proposta endereçada ao usuário atual
+        Proposta base = propostaRepository
+            .findTopByContratoIdAndDestinatarioIdOrderByDataCriacaoDesc(contratoId, atual.getId())
+            .orElseThrow(() -> new IllegalStateException("Não há proposta endereçada a você para responder"));
 
-        // validações de negócio essenciais
-        if (dto.valor() == null || dto.valor().signum() <= 0) {
-            throw new IllegalArgumentException("Valor deve ser maior que zero");
-        }
-        if (dto.prazoResposta() != null && dto.prazoResposta().before(new Date())) {
-            throw new IllegalArgumentException("Prazo de resposta deve ser no futuro");
-        }
-        if (dto.dataInicio() != null && dto.dataFim() != null && dto.dataInicio().after(dto.dataFim())) {
-            throw new IllegalArgumentException("Data de início não pode ser posterior à data de fim");
-        }
+        // inverter papéis a partir da última proposta recebida
+        Usuario remetente = base.getDestinatario();  // eu (autenticado)
+        Usuario destinatario = base.getRemetente();  // quem me enviou
 
-        // (opcional) política para pendentes:
-        // - bloquear se já existir PENDENTE do mesmo remetente neste contrato
-        // boolean pendenteDoMesmoLado = propostaRepository
-        //     .existsByContratoIdAndRemetenteIdAndStatus(contrato.getId(), remetente.getId(), StatusProposta.PENDENTE);
-        // if (pendenteDoMesmoLado) throw new IllegalStateException("Já existe contraproposta pendente deste remetente");
-
-        // criar proposta
         Proposta nova = new Proposta();
         nova.setRemetente(remetente);
         nova.setDestinatario(destinatario);
@@ -205,11 +188,9 @@ public class PropostaService {
         nova.setData_inicio(dto.dataInicio());
         nova.setData_fim(dto.dataFim());
 
-        // vincular ao mesmo contrato
         contrato.addProposta(nova);
-
-        // persistir pelo agregado (ou diretamente, se preferir)
         contratoRepository.save(contrato);
         return nova;
     }
+
 }

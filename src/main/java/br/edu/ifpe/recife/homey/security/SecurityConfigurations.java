@@ -46,7 +46,7 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.POST, "/usuario/cliente").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario/prestador").permitAll()
                         // Upload de foto - autenticado
-                        .requestMatchers(HttpMethod.POST, "/usuario/foto").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/usuario/foto").permitAll()
                         
                         // Categorias - todas as operações públicas (facilitando uso inicial)
                         .requestMatchers("/categorias/**").permitAll()
@@ -61,6 +61,7 @@ public class SecurityConfigurations {
                         // Contratos - apenas autenticados
                         .requestMatchers(HttpMethod.POST, "/contratos").hasRole("CLIENTE")
                         .requestMatchers("/contratos/**").authenticated()
+                        .requestMatchers("/propostas/**").authenticated()
 
                         .requestMatchers("/avaliacoes/**").authenticated()
 
